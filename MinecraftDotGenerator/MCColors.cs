@@ -77,6 +77,8 @@ namespace MinecraftDotGenerator
 
         public static MCColorDefine[] Colors => map.Values.ToArray();
 
+        public static MCColorDefine[] FullColors => map.Values.Select(e => new[] { e, e.ToMode180(), e.ToMode220() }).SelectMany(e => e).ToArray();
+
         public static MCColorDefine GetColor(MCColor color)
         {
             return map[color];

@@ -8,14 +8,15 @@ namespace MinecraftDotGenerator
 {
     internal static class Program
     {
-        private static MCColorDefine ConvertMapColor(System.Drawing.Color color)
+        private static MCColorDefine ConvertMapColor(System.Drawing.Color color, MCColorDefine[] colors)
         {
             Lab lab = Lab.FromDrawingColor(color);
-            return MCColors.Colors.OrderBy(e => Lab.Distance(lab, Lab.FromDrawingColor(e.ToDrawinColor()))).FirstOrDefault();
+            return colors.OrderBy(e => Lab.Distance(lab, Lab.FromDrawingColor(e.ToDrawinColor()))).FirstOrDefault();
         }
 
         private static string ConvertMapDraw(string path)
         {
+            var colors = MCColors.Colors;
             using (Bitmap src = System.Drawing.Image.FromFile(path) as Bitmap)
             using (Bitmap dst = new Bitmap(src.Width, src.Height))
             {
@@ -24,7 +25,7 @@ namespace MinecraftDotGenerator
                     for (int y = 0; y < src.Height; y++)
                     {
                         Color pix = src.GetPixel(x, y);
-                        MCColorDefine mcc = ConvertMapColor(pix);
+                        MCColorDefine mcc = ConvertMapColor( pix, colors);
                         dst.SetPixel(x, y, mcc.ToDrawinColor());
 
                         Console.WriteLine($"x={x},y={y} color={pix}->{mcc.ToDrawinColor()}");
@@ -35,6 +36,32 @@ namespace MinecraftDotGenerator
                 dst.Save($"{name}_map.png");
                 return $"{name}_map.png";
             }
+        }
+
+        private static string ConvertMapFullDraw(string path)
+        {
+            var colors = MCColors.FullColors;
+
+            using (Bitmap src = System.Drawing.Image.FromFile(path) as Bitmap)
+            using (Bitmap dst = new Bitmap(src.Width, src.Height))
+            {
+                for (int x = 0; x < src.Width; x++)
+                {
+                    for (int y = 0; y < src.Height; y++)
+                    {
+                        Color pix = src.GetPixel(x, y);
+                        MCColorDefine mcc = ConvertMapColor(pix, colors);
+                        dst.SetPixel(x, y, mcc.ToDrawinColor());
+
+                        Console.WriteLine($"x={x},y={y} color={pix}->{mcc.ToDrawinColor()}");
+                    }
+                }
+
+                string name = Path.GetFileNameWithoutExtension(path);
+                dst.Save($"{name}_fullmap.png");
+                return $"{name}_fullmap.png";
+            }
+
         }
 
         private static string ConvertTo24Bit(string path, System.Drawing.Color bgColor)
@@ -85,6 +112,7 @@ namespace MinecraftDotGenerator
                 string img24bitPath = ConvertTo24Bit(inputImagePath, bgColor);
                 string resizedPath = ReseizeImage(img24bitPath);
                 _ = ConvertMapDraw(resizedPath);
+                _ = ConvertMapFullDraw(resizedPath);
             }
         }
 
