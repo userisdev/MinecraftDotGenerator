@@ -2,8 +2,13 @@
 
 namespace MinecraftDotGenerator
 {
+    /// <summary> Lab class. </summary>
     internal sealed class Lab
     {
+        /// <summary> Initializes a new instance of the <see cref="Lab" /> class. </summary>
+        /// <param name="l"> The l. </param>
+        /// <param name="a"> a. </param>
+        /// <param name="b"> The b. </param>
         public Lab(double l, double a, double b)
         {
             L = l;
@@ -11,22 +16,40 @@ namespace MinecraftDotGenerator
             B = b;
         }
 
+        /// <summary> Gets a. </summary>
+        /// <value> a. </value>
         public double A { get; }
 
+        /// <summary> Gets the b. </summary>
+        /// <value> The b. </value>
         public double B { get; }
 
+        /// <summary> Gets the l. </summary>
+        /// <value> The l. </value>
         public double L { get; }
 
+        /// <summary> Distances the specified a. </summary>
+        /// <param name="a"> a. </param>
+        /// <param name="b"> The b. </param>
+        /// <returns> </returns>
         public static double Distance(Lab a, Lab b)
         {
             return Math.Sqrt(Math.Pow(a.L - b.L, 2) + Math.Pow(a.A - b.A, 2) + Math.Pow(a.B - b.B, 2));
         }
 
+        /// <summary> Froms the color of the drawing. </summary>
+        /// <param name="color"> The color. </param>
+        /// <returns> </returns>
         public static Lab FromDrawingColor(System.Drawing.Color color)
         {
             return FromRGB(color.R, color.G, color.B);
         }
 
+        /// <summary> Froms the RGB. </summary>
+        /// <param name="r"> The r. </param>
+        /// <param name="g"> The g. </param>
+        /// <param name="b"> The b. </param>
+        /// <returns> </returns>
         public static Lab FromRGB(double r, double g, double b)
         {
             double rRatio = r / 255;

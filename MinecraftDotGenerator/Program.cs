@@ -1,143 +1,40 @@
-﻿using OpenCvSharp;
-using System;
-using System.Drawing;
+﻿using System;
 using System.IO;
 using System.Linq;
 
 namespace MinecraftDotGenerator
 {
+    /// <summary> Program class. </summary>
     internal static class Program
     {
-        private static MCColorDefine ConvertMapColor(System.Drawing.Color color, MCColorDefine[] colors)
-        {
-            Lab lab = Lab.FromDrawingColor(color);
-            return colors.OrderBy(e => Lab.Distance(lab, Lab.FromDrawingColor(e.ToDrawinColor()))).FirstOrDefault();
-        }
-
-        private static string ConvertMapDraw(string path)
-        {
-            var colors = MCColors.Colors;
-            using (Bitmap src = System.Drawing.Image.FromFile(path) as Bitmap)
-            using (Bitmap dst = new Bitmap(src.Width, src.Height))
-            {
-                for (int x = 0; x < src.Width; x++)
-                {
-                    for (int y = 0; y < src.Height; y++)
-                    {
-                        Color pix = src.GetPixel(x, y);
-                        MCColorDefine mcc = ConvertMapColor( pix, colors);
-                        dst.SetPixel(x, y, mcc.ToDrawinColor());
-
-                        Console.WriteLine($"x={x},y={y} color={pix}->{mcc.ToDrawinColor()}");
-                    }
-                }
-
-                string name = Path.GetFileNameWithoutExtension(path);
-                dst.Save($"{name}_map.png");
-                return $"{name}_map.png";
-            }
-        }
-
-        private static string ConvertMapFullDraw(string path)
-        {
-            var colors = MCColors.FullColors;
-
-            using (Bitmap src = System.Drawing.Image.FromFile(path) as Bitmap)
-            using (Bitmap dst = new Bitmap(src.Width, src.Height))
-            {
-                for (int x = 0; x < src.Width; x++)
-                {
-                    for (int y = 0; y < src.Height; y++)
-                    {
-                        Color pix = src.GetPixel(x, y);
-                        MCColorDefine mcc = ConvertMapColor(pix, colors);
-                        dst.SetPixel(x, y, mcc.ToDrawinColor());
-
-                        Console.WriteLine($"x={x},y={y} color={pix}->{mcc.ToDrawinColor()}");
-                    }
-                }
-
-                string name = Path.GetFileNameWithoutExtension(path);
-                dst.Save($"{name}_fullmap.png");
-                return $"{name}_fullmap.png";
-            }
-
-        }
-
-        private static string ConvertTo24Bit(string path, System.Drawing.Color bgColor)
-        {
-            using (Bitmap src = System.Drawing.Image.FromFile(path) as Bitmap)
-            using (Bitmap dst = new Bitmap(src.Width, src.Height))
-            using (Graphics g = Graphics.FromImage(dst))
-            {
-                g.Clear(bgColor);
-                g.DrawImageUnscaledAndClipped(src, new Rectangle(0, 0, src.Width, src.Height));
-                string name = Path.GetFileNameWithoutExtension(path);
-                dst.Save($"{name}_24bit.png");
-                return $"{name}_24bit.png";
-            }
-        }
-
-        private static void GenerateColorSample()
-        {
-            MCColorDefine[] colors = MCColors.Colors;
-            int h = 10 * colors.Length;
-            int w = h;
-
-            using (Bitmap bmp = new Bitmap(w, h))
-            using (Graphics g = Graphics.FromImage(bmp))
-            {
-                g.Clear(System.Drawing.Color.White);
-                for (int i = 0; i < colors.Length; i++)
-                {
-                    using (SolidBrush brush = new SolidBrush(colors[i].ToDrawinColor()))
-                    {
-                        g.FillRectangle(brush, new Rectangle(0, 10 * i, w, 10));
-                    }
-                }
-
-                bmp.Save("color_map.png");
-            }
-        }
-
+        /// <summary> Defines the entry point of the application. </summary>
+        /// <param name="args"> The arguments. </param>
         private static void Main(string[] args)
         {
-            GenerateColorSample();
+            Console.WriteLine($"{DateTime.Now:yyyyMMdd HH:mm:ss.fff}");
+            string src = args.FirstOrDefault();
+            string dst = args.ElementAtOrDefault(1);
 
-            string inputImagePath = args.FirstOrDefault();
-
-            if (File.Exists(inputImagePath))
+            if (!File.Exists(src))
             {
-                var bgColor = Color.FromArgb(255, 255, 255);
-                string img24bitPath = ConvertTo24Bit(inputImagePath, bgColor);
-                string resizedPath = ReseizeImage(img24bitPath);
-                _ = ConvertMapDraw(resizedPath);
-                _ = ConvertMapFullDraw(resizedPath);
+                Console.WriteLine("not found.");
+                Environment.Exit(1);
             }
-        }
 
-        private static string ReseizeImage(string path)
-        {
-            using (Mat image = Cv2.ImRead(path, ImreadModes.Color))
+            if (string.IsNullOrWhiteSpace(dst))
             {
-                int shortEdge = Math.Min(image.Width, image.Height);
-                double scale = 128.0 / shortEdge;
-
-                OpenCvSharp.Size newSize = new OpenCvSharp.Size((int)(scale * image.Width), (int)(scale * image.Height));
-                using (Mat resized = new Mat())
-                {
-                    Cv2.Resize(image, resized, newSize, 0, 0, InterpolationFlags.Area);
-                    int x = (resized.Width - 128) / 2;
-                    int y = (resized.Height - 128) / 2;
-                    Rect roi = new Rect(x, y, 128, 128);
-                    using (Mat cropped = new Mat(resized, roi))
-                    {
-                        string name = Path.GetFileNameWithoutExtension(path);
-                        _ = cropped.SaveImage($"{name}_resized.png");
-                        return $"{name}_resized.png";
-                    }
-                }
+                Console.WriteLine("invalid args.");
+                Environment.Exit(1);
             }
+
+            byte[] data = File.ReadAllBytes(src);
+            DirectoryInfo workDir = Directory.CreateDirectory(dst);
+
+            MCGenerator.UsingFullColor = false;
+            bool result = MCGenerator.Generate(workDir, data);
+            Console.WriteLine($"result={result}");
+            Console.WriteLine($"{DateTime.Now:yyyyMMdd HH:mm:ss.fff}");
+            Environment.Exit(0);
         }
     }
 }

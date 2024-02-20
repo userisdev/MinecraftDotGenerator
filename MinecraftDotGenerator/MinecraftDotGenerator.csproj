@@ -81,7 +81,10 @@
     <Compile Include="Lab.cs" />
     <Compile Include="MCColor.cs" />
     <Compile Include="MCColorDefine.cs" />
+    <Compile Include="MCColorMode.cs" />
     <Compile Include="MCColors.cs" />
+    <Compile Include="MCGenerator.cs" />
+    <Compile Include="MCResult.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1,12 +1,19 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 
 namespace MinecraftDotGenerator
 {
+    /// <summary> MCColors class. </summary>
     internal static class MCColors
     {
+        /// <summary> The color map </summary>
+        private static readonly Dictionary<Color, MCColorDefine> colorMap;
+
+        /// <summary> The map </summary>
         private static readonly Dictionary<MCColor, MCColorDefine> map;
 
+        /// <summary> Initializes the <see cref="MCColors" /> class. </summary>
         static MCColors()
         {
             map = new Dictionary<MCColor, MCColorDefine>
@@ -73,15 +80,32 @@ namespace MinecraftDotGenerator
                 { MCColor.RAW_IRON, new MCColorDefine(MCColor.RAW_IRON, 216, 175, 147) },
                 { MCColor.GLOW_LICHEN, new MCColorDefine(MCColor.GLOW_LICHEN, 127, 167, 150) }
             };
+
+            colorMap = FullColors.ToDictionary(e => e.ToDrawinColor(), e => e);
         }
 
+        /// <summary> Gets the colors. </summary>
+        /// <value> The colors. </value>
         public static MCColorDefine[] Colors => map.Values.ToArray();
 
+        /// <summary> Gets the full colors. </summary>
+        /// <value> The full colors. </value>
         public static MCColorDefine[] FullColors => map.Values.Select(e => new[] { e, e.ToMode180(), e.ToMode220() }).SelectMany(e => e).ToArray();
 
-        public static MCColorDefine GetColor(MCColor color)
+        /// <summary> Gets the color define. </summary>
+        /// <param name="color"> The color. </param>
+        /// <returns> </returns>
+        public static MCColorDefine GetColorDefine(MCColor color)
         {
             return map[color];
+        }
+
+        /// <summary> Gets the color define. </summary>
+        /// <param name="color"> The color. </param>
+        /// <returns> </returns>
+        public static MCColorDefine GetColorDefine(Color color)
+        {
+            return !colorMap.ContainsKey(color) ? default : colorMap[color];
         }
     }
 }
